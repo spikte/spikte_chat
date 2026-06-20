@@ -21,7 +21,10 @@ static std::string splitMessage(std::string message, float maxSize) {
             codepoints.clear();
         }
     }
-    result.pop_back();
+    if(start < message.size())
+        result += message.substr(start, message.size() - start);
+    if(result.back() == '\n')
+        result.pop_back();
 
     return result;
 }
@@ -139,8 +142,8 @@ void initGuiChatData(GuiChatData& guiChatData) {
     std::memset(data.chatMessage, '\0', MAX_SIZE_CHAT_MESSAGE);
     data.chatMessageEdit = false;
     // Position the text input at the bottom of the panel
-    // TODO: Maybe put the margin in the guiConfig
-    data.rectTextBox = pos(panel, RAYLYT_BOTTOM | RAYLYT_FILL_X, {5, 5, 5, 10}, {0, 20});
+    data.rectTextBox = pos(panel, RAYLYT_BOTTOM | RAYLYT_FILL_X, guiSettings.inputTextBoxMargin, guiSettings.inputTextBoxDim);
+    data.textBoxBoundingY = data.rectTextBox.height + guiSettings.inputTextBoxMargin.y + guiSettings.inputTextBoxMargin.w;
     // We remove the width of a scrollbar that the input is not behing or above the scrollbar but next to it
     //data.rectTextBox.width -= GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH);
 
@@ -155,7 +158,7 @@ void initGuiChatData(GuiChatData& guiChatData) {
     // Setup scroll panel
     // Panel content is the size of panel minus the width of a scrollbar and the height of the text input
     data.panelContent = data.rectViewNoScrollBar;
-    data.panelContent.height -= (data.rectTextBox.height + 15);
+    data.panelContent.height -= data.textBoxBoundingY + 10;
     data.minHeight = data.panelContent.height;
     data.totalHeight = 0;
     data.panelScroll = {0};
@@ -172,34 +175,62 @@ void updateGuiChatDataChat(GuiChatData& guiChatData, uint32_t chatId) {
     if(chat.theme != guiChatData.theme->theme)
         guiChatData.theme = createTheme(chat.theme, guiChatData.rectTheme);
 }
+static void offsetMessageContained(GuiChatData& guiChatData, GuiMessageData& guiMessageData) {
+    int offset;
+
+    offset = guiMessageData.boundingBox.y + guiSettings.msgGap; 
+    for(GuiMessageData& prev_message: guiChatData.messages) {
+        prev_message.rectBg.y -= offset;
+        prev_message.rectFg.y -= offset;
+        prev_message.rectAuthor.y -= offset;
+    }
+    updateGuiMessageDataPos(guiMessageData, guiChatData.panelContent, 0);
+}
+static void offsetMessageTransition(GuiChatData& guiChatData, GuiMessageData& guiMessageData) {
+    int offset;
+    int offsetW;
+
+    guiChatData.totalHeight += guiChatData.textBoxBoundingY + 10;
+    guiChatData.panelContent.height = guiChatData.totalHeight;
+    offset = guiChatData.panelContent.y + guiSettings.msgGap;
+    for(GuiMessageData& message: guiChatData.messages) {
+        message.rectBg.y = offset;
+        message.rectFg.y = offset;
+        message.rectAuthor.y = offset;
+        //message.boundingBox.y = offset;
+        offset += message.boundingBox.y + guiSettings.msgGap;
+    }
+    offsetW = guiChatData.textBoxBoundingY + 10;
+    updateGuiMessageDataPos(guiMessageData, guiChatData.panelContent, offsetW);
+}
+static void offsetMessageNotContained(GuiChatData& guiChatData, GuiMessageData& guiMessageData) {
+    int offsetW;
+
+    offsetW = guiChatData.textBoxBoundingY + 10;
+    guiChatData.panelContent.height = guiChatData.totalHeight;
+    updateGuiMessageDataPos(guiMessageData, guiChatData.panelContent, offsetW);
+}
 void updateGuiChatDataMessages(GuiChatData& guiChatData, uint32_t chatId) {
     GuiChatData& data = guiChatData;
     Chat& chat = *clientConfig.idToChat[chatId];
     const Message& message = chat.messages.back();
     int offsetW;
+    bool isStartContained;
 
+    isStartContained = data.totalHeight <= data.minHeight;
     offsetW = 0;
     GuiMessageData guiMessageData;
     initGuiMessageData(guiMessageData, message);
-    if(data.totalHeight < data.minHeight) {
-        int offset = guiMessageData.boundingBox.y + guiSettings.msgGap; 
-        for(GuiMessageData& prev_message: data.messages) {
-            prev_message.rectBg.y -= offset;
-            prev_message.rectFg.y -= offset;
-            prev_message.rectAuthor.y -= offset;
-            prev_message.boundingBox.y -= offset;
-        }
-    }
     data.totalHeight += guiMessageData.boundingBox.y + guiSettings.msgGap;
-    if(data.totalHeight > data.minHeight) {
-        offsetW = data.rectTextBox.height + 15;
-        data.panelContent.height = data.totalHeight;
-    }
-    updateGuiMessageDataPos(guiMessageData, data.panelContent, offsetW);
+    if(isStartContained && data.totalHeight < data.minHeight)
+        offsetMessageContained(guiChatData, guiMessageData);
+    else if(isStartContained && data.totalHeight >= data.minHeight)
+        offsetMessageTransition(guiChatData, guiMessageData);
+    else
+        offsetMessageNotContained(guiChatData, guiMessageData);
+
     data.messages.push_back(guiMessageData);
     data.panelScroll = {0, guiSettings.chatRect.height - data.panelContent.height - data.rectTextBox.height - 15};
-    if(data.totalHeight - (guiMessageData.boundingBox.y + guiSettings.msgGap) < data.minHeight && data.totalHeight >= data.minHeight)
-        data.rectTheme = data.rectViewScrollBar;
 }
 void GuiChat(GuiChatData &data) {
     GuiScrollPanel(guiSettings.chatRect, data.name.c_str(), data.panelContent, &data.panelScroll, &data.panelView);

@@ -45,6 +45,16 @@ void initSettingsChat(int screenWidth, int screenHeight) {
     guiSettings.chatRect.y = guiSettings.margin.y;
     guiSettings.chatRect.width = 3 * (screenWidth - 2 * guiSettings.margin.x) / 4.f - guiSettings.windowGap;
     guiSettings.chatRect.height = screenHeight - 2 * guiSettings.margin.y;
+    guiSettings.inputTextBoxDim = {0, 20};
+    guiSettings.inputTextBoxMargin = {5, 0, 5, 10};
+    if(guiSettings.chatRect.width > 100) {
+        guiSettings.msgMaxSize = {guiSettings.chatRect.width * 0.1f, 0};
+        guiSettings.msgMaxSizeServer = {guiSettings.chatRect.width * 0.8f, 0};
+    }
+    else {
+        guiSettings.msgMaxSize = {guiSettings.chatRect.width, 0};
+        guiSettings.msgMaxSizeServer = {guiSettings.chatRect.width, 0};
+    }
 }
 void initSettingsChatCreation(int screenWidth, int screenHeight) {
     initRectCentered(guiSettings.chatCreationRect, screenWidth, screenHeight, 250, 100);
@@ -67,13 +77,4 @@ void initSettings(int screenWidth, int screenHeight) {
     initSettingsChat(screenWidth, screenHeight);
     initSettingsChatCreation(screenWidth, screenHeight);
     initSettingsMsg();
-
-    if(guiSettings.chatRect.width < 100) {
-        guiSettings.msgMaxSize = {guiSettings.chatRect.width * 0.3f, 0};
-        guiSettings.msgMaxSizeServer = {guiSettings.chatRect.width * 0.8f, 0};
-    }
-    else {
-        guiSettings.msgMaxSize = {guiSettings.chatRect.width, 0};
-        guiSettings.msgMaxSizeServer = {guiSettings.chatRect.width, 0};
-    }
 }

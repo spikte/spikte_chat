@@ -52,6 +52,8 @@ struct GuiSettings {
     Vector2 msgMaxSizeServer;
     float msgBorderRadius;
     int msgSegments;
+    Vector2 inputTextBoxDim;
+    Vector4 inputTextBoxMargin;
 };
 extern GuiSettings guiSettings;
 

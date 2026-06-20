@@ -59,6 +59,7 @@ struct GuiChatData {
     std::vector<GuiMessageData> messages;
     // // Message input
     Rectangle rectTextBox;
+    float textBoxBoundingY;
     char chatMessage[MAX_SIZE_CHAT_MESSAGE];
     bool chatMessageEdit;
     // // Theme
