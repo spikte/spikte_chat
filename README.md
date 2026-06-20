@@ -1,10 +1,10 @@
 # spikte_chat
 
-Educational chat project in C++ to learn about the Linux networking stacks.
+Educational chat project in C++ to learn about the Linux networking stack.
 
 ## Running
 
->This is exemple to run this project on localhost with self signed CA, so not an exemple of a real TLS app deployment
+>This is a an exemple to run this project on localhost with self signed CA, so not an exemple of a real TLS app deployment
 
 ```
 make chain.pem
@@ -30,18 +30,18 @@ Note that the `chain.pem` file generated must be accessible from the client and 
 
 **TODO**:
 
-* [] Test a lot of edge cases
-* [] Add audio
-* [] Maybe the theme should be client sided only and not shared between user of a same chat, it would allow that the theme is per user and not per chat
-* [] Chat history when pressing up arrow
-* [] `/help` to display availabe commands
-* [] `/getMembers` to display members (with current status)
-* [] Display who saw a message
-* [] Display the timestamp
-* [] UI support for deleting/editing messages
-* [] UI support for deleting a chat
-* [] Chat owner role transfere
-* [] Informs the user if he tries to use a raw TCP connection when the server uses TLS encryption
-* [] Support for image format (PNG, JPEG, GiF)
-* [] Support for video format (MP4)
-* [] Support for audio
+* [ ] Test a lot of edge cases
+* [ ] Add audio
+* [ ] Maybe the theme should be client sided only and not shared between user of a same chat, it would allow that the theme is per user and not per chat
+* [ ] Chat history when pressing up arrow
+* [ ] `/help` to display availabe commands
+* [ ] `/getMembers` to display members (with current status)
+* [ ] Display who saw a message
+* [ ] Display the timestamp
+* [ ] UI support for deleting/editing messages
+* [ ] UI support for deleting a chat
+* [ ] Chat owner role transfere
+* [ ] Informs the user if he tries to use a raw TCP connection when the server uses TLS encryption
+* [ ] Support for image format (PNG, JPEG, GiF)
+* [ ] Support for video format (MP4)
+* [ ] Support for audio
