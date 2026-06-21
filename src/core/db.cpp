@@ -300,7 +300,7 @@ error:
     return rc;
 }
 // Here the container is directly a Chat ref because i fill `chat.members` AND `chat.roles`
-// But maybe I'll need only the user in the future without the Chat creation so I'll have to
+// But maybe I'll need only the user in the future without the Chat create so I'll have to
 // implement another one that fill a std::vector<User>
 int getChatMembers(sqlite3* db, uint32_t chatId, Chat& chat) {
     bool error;
@@ -327,6 +327,85 @@ int getChatMembers(sqlite3* db, uint32_t chatId, Chat& chat) {
         chat.roles[newUser.id] = role;
     }
     if((error = (rc != SQLITE_DONE))) goto error;
+
+error:
+    if(error)
+        printSqliteError(db, "getChatMembers", rc);
+    if(stmt)
+        sqlite3_finalize(stmt);
+    return rc;
+}
+int getChatNMembers(sqlite3 *db, uint32_t chatId, int* nMembers) {
+    bool error;
+    std::string query;
+    sqlite3_stmt *stmt;
+    int rc;
+
+    error = false;
+    query = "SELECT COUNT(u.id) FROM users u JOIN chatMembers m ON u.id = m.userId WHERE m.chatId = ?";
+    stmt = nullptr;
+
+    rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
+    if((error = (rc != SQLITE_OK))) goto error;
+
+    rc = sqlite3_bind_int(stmt, 1, chatId);
+    if((error = (rc != SQLITE_OK))) goto error;
+
+    rc = sqlite3_step(stmt);
+    if((error = (rc != SQLITE_ROW))) goto error;
+
+    *nMembers = sqlite3_column_int(stmt, 0);
+
+error:
+    if(error)
+        printSqliteError(db, "getChatMembers", rc);
+    if(stmt)
+        sqlite3_finalize(stmt);
+    return rc;
+}
+int getChatNewOwner(sqlite3 *db, uint32_t chatId, uint32_t *userId) {
+    bool error;
+    std::string query;
+    sqlite3_stmt *stmt;
+    int rc;
+
+    error = false;
+    query = "SELECT u.id FROM users u JOIN chatMembers m ON u.id = m.userId WHERE m.chatId = ? AND roleId = ?";
+    stmt = nullptr;
+
+    /* Select the first ADMIN */
+    rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
+    if((error = (rc != SQLITE_OK))) goto error;
+
+    rc = sqlite3_bind_int(stmt, 1, chatId);
+    if((error = (rc != SQLITE_OK))) goto error;
+
+    rc = sqlite3_bind_int(stmt, 2, static_cast<uint8_t>(ChatRole::ADMIN));
+    if((error = (rc != SQLITE_OK))) goto error;
+
+    rc = sqlite3_step(stmt);
+    if(rc == SQLITE_ROW) {
+        *userId = sqlite3_column_int(stmt, 0);
+        goto error;
+    }
+    else
+        if((error = (rc != SQLITE_DONE))) goto error;
+
+    /* If no admin select rando user */
+    sqlite3_finalize(stmt);
+    query = "SELECT u.id FROM users u JOIN chatMembers m ON u.id = m.userId WHERE m.chatId = ?";
+    stmt = nullptr;
+
+    rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
+    if((error = (rc != SQLITE_OK))) goto error;
+
+    rc = sqlite3_bind_int(stmt, 1, chatId);
+    if((error = (rc != SQLITE_OK))) goto error;
+
+    rc = sqlite3_step(stmt);
+    if((error = (rc != SQLITE_DONE))) goto error;
+
+    *userId = sqlite3_column_int(stmt, 0);
 
 error:
     if(error)

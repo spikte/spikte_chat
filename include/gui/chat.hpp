@@ -88,8 +88,8 @@ extern GuiChatListData guiChatListData;
 void initGuiChatList();
 void GuiChatList();
 
-/* Chat creation */
-struct GuiChatCreationData {
+/* Chat create */
+struct GuiChatCreateData {
     // Gui data
     // // Chat name input
     char name[MAX_SIZE_CHAT_NAME];
@@ -101,10 +101,22 @@ struct GuiChatCreationData {
     bool error;
     std::string errorMsg;
 };
-extern GuiChatCreationData guiChatCreationData;
-void initGuiChatCreationData();
-void GuiChatCreationPanel();
-void GuiChatCreation();
-void GuiWaitChatCreation();
+extern GuiChatCreateData guiChatCreateData;
+void initGuiChatCreateData();
+void GuiChatCreatePanel();
+void GuiChatCreate();
+void GuiWaitChatCreate();
+
+/* Chat deletion */
+struct GuiChatDeleteData {
+    uint32_t id;
+    bool isLocalUserOwner;
+};
+extern GuiChatDeleteData guiChatDeleteData;
+void initGuiChatDeleteData();
+void GuiChatDeleteMember();
+void GuiChatDeleteOwner();
+void GuiChatDelete();
 
 #endif
+

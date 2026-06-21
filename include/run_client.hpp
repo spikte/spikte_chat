@@ -27,7 +27,7 @@ void updateNetwork(PacketParsingData &parsingData);
 // Auth
 void handleServerMessageSignIn(NetworkMessage &netMsg);
 void handleServerMessageLogin(NetworkMessage &netMsg);
-// Chat creation response
+// Chat create response
 void handleServerMessageChatAdd(NetworkMessage &netMsg);
 // Chat sync
 // Chat metadta

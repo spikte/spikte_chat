@@ -334,13 +334,16 @@ void handleClientMessageChatMemberDel(ClientSession &session, NetworkMessage &ne
     uint8_t senderRoleU8;
     ChatRole senderRole;
     std::vector<uint32_t> userIds;
-    std::string senderName;
+    bool isSessionUser;
 
     payload = netMsg.payload;
     offset = 0;
     // Parse data
     chatId = packetReadU32(payload, &offset);
     userName = packetReadString(payload, &offset, true);
+
+    // Is user deleting itself
+    isSessionUser = userName == session.username;
 
     // Check sending user has the right to do it
     rc = getUserRole(serverConfig.db, chatId, session.userId, &senderRoleU8);
@@ -349,7 +352,7 @@ void handleClientMessageChatMemberDel(ClientSession &session, NetworkMessage &ne
         return;
     }
     senderRole = static_cast<ChatRole>(senderRoleU8);
-    if(senderRoleU8 > static_cast<uint8_t>(ChatRole::ADMIN)) {
+    if(!isSessionUser && senderRoleU8 > static_cast<uint8_t>(ChatRole::ADMIN)) {
         sendNetMsg(session, []() { return buildNetMsgAnswer(NMType::CHAT_MEMBER, NMStatus::FORBIDDEN); });
         return;
     }
@@ -366,7 +369,7 @@ void handleClientMessageChatMemberDel(ClientSession &session, NetworkMessage &ne
         return;
     }
     userOldRole = static_cast<ChatRole>(userOldRoleU8);
-    if(!hasRightToManageMember(senderRole, userOldRole)) {
+    if(!isSessionUser && !hasRightToManageMember(senderRole, userOldRole)) {
         sendNetMsg(session, []() { return buildNetMsgAnswer(NMType::CHAT_MEMBER, NMStatus::FORBIDDEN); });
         return;
     }
@@ -383,10 +386,36 @@ void handleClientMessageChatMemberDel(ClientSession &session, NetworkMessage &ne
     // If deleted user is connected notify him
     sendNetMsgIfConnected(userId, [chatId]() { return buildNetMsgSyncChatDel(chatId); });
     // Send admin notif
-    rc = getUserName(serverConfig.db, session.userId, &senderName);
-    writeMessageAdmin(chatId, senderName + " removed " + userName);
+    if(isSessionUser)
+        writeMessageAdmin(chatId, session.username + " left the chat");
+    else
+        writeMessageAdmin(chatId, session.username + " removed " + userName);
     // Send success to sender
     sendNetMsg(session, []() { return buildNetMsgAnswer(NMType::CHAT_MEMBER, NMStatus::SUCCESS); });
+
+    // If it was the session user and this session user is the owner
+    if(isSessionUser && userOldRole == ChatRole::OWNER) {
+        int nMembers;
+        rc = getChatNMembers(serverConfig.db, chatId, &nMembers);
+        if(rc != SQLITE_ROW)
+            return;
+        // If it was the only user, delete the chat
+        if(nMembers == 0) {
+            deleteChat(serverConfig.db, chatId);
+            return;
+        }
+        // Else select a random admin (or member if no admin) to be the new owner
+        // Not the best but i am lazy
+        uint32_t newOwnerId;
+        std::string newOwnerName;
+        newOwnerId = 0;
+        rc = getChatNewOwner(serverConfig.db, chatId, &newOwnerId);
+        if(rc != SQLITE_ROW)
+            return;
+        updateUserRole(serverConfig.db, chatId, newOwnerId, static_cast<uint8_t>(ChatRole::OWNER));
+        rc = getUserName(serverConfig.db, newOwnerId, &newOwnerName);
+        writeMessageAdmin(chatId, newOwnerName + " is now the OWNER");
+    }
 }
 void handleClientMessageChatMember(ClientSession &session, NetworkMessage &netMsg) {
     if(netMsg.action == NetworkMessageAction::ADD)
@@ -493,7 +522,6 @@ void handleClientMessageChatThemeSet(ClientSession &session, NetworkMessage &net
         sendNetMsg(session, []() { return buildNetMsgAnswer(NMType::CHAT_THEME, NMStatus::FORBIDDEN); });
         return;
     }
-    std::printf("Update theme: %u\n", theme);
     rc = updateChatTheme(serverConfig.db, chatId, theme);
     if(rc != SQLITE_DONE) {
         sendNetMsg(session, []() { return buildNetMsgAnswer(NMType::CHAT_THEME, NMStatus::UNEXPECTED); });

@@ -7,13 +7,13 @@ static std::string splitMessage(std::string message, float maxSize) {
     Vector2 currentDims;
     std::vector<int> codepoints; // Maybe an array ? The max message size is set so
 
-    messageDims = MeasureTextEx(guiSettings.defaultFont, message.c_str(), (float)guiSettings.fontSize, (float)guiSettings.spacing);
+    messageDims = MeasureTextEx(guiSettings.defaultFont, message.c_str(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
     if(messageDims.x < maxSize)
         return message;
     start = 0;
     for(size_t i = 0; i < message.size(); i++) {
         codepoints.push_back(message[i]);
-        currentDims = MeasureTextCodepoints(guiSettings.defaultFont, codepoints.data(), codepoints.size(), (float)guiSettings.fontSize, (float)guiSettings.spacing);
+        currentDims = MeasureTextCodepoints(guiSettings.defaultFont, codepoints.data(), codepoints.size(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
         if(currentDims.x >= maxSize) {
             result += message.substr(start, i - start);
             result += '\n';
@@ -25,6 +25,27 @@ static std::string splitMessage(std::string message, float maxSize) {
         result += message.substr(start, message.size() - start);
     if(result.back() == '\n')
         result.pop_back();
+
+    return result;
+}
+static std::string cutMessage(std::string message, float maxWidth) {
+    Vector2 messageDims;
+    std::string result;
+    int start;
+    Vector2 currentDims;
+    std::vector<int> codepoints; // Maybe an array ? The max message size is set so
+
+    messageDims = MeasureTextEx(guiSettings.defaultFont, message.c_str(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+    if(messageDims.x < maxWidth)
+        return message;
+    size_t end = 0;
+    currentDims = {0};
+    while(currentDims.x < maxWidth) {
+        codepoints.push_back(message[end]);
+        currentDims = MeasureTextCodepoints(guiSettings.defaultFont, codepoints.data(), codepoints.size(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+        end++;
+    }
+    result += message.substr(0, end);
 
     return result;
 }
@@ -59,19 +80,19 @@ void initGuiMessageData(GuiMessageData& guiMessageData, const Message& message) 
     else
         data.displayAuthor = false;
 
-    data.boundingBox = MeasureTextEx(guiSettings.defaultFont, guiMessageData.content.c_str(), (float)guiSettings.fontSize, (float)guiSettings.spacing);
+    data.boundingBox = MeasureTextEx(guiSettings.defaultFont, guiMessageData.content.c_str(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
     // Increase the bounding box by text inside margin
     data.boundingBox.x += 2 * guiSettings.msgMargin.x;
     data.boundingBox.y += 2 * guiSettings.msgMargin.y;
     // If author needs to be displayed increase the bounding box
     if(guiMessageData.msgType == GuiMessageType::OTHER_USER)
-        data.boundingBox.y += guiSettings.fontSize + guiSettings.authorGap;
+        data.boundingBox.y += GuiGetStyle(DEFAULT, TEXT_SIZE) + guiSettings.authorGap;
 }
 void updateGuiMessageDataPos(GuiMessageData& guiMessageData, Rectangle panel, float offsetW) {
     GuiMessageData& data = guiMessageData;
     Vector2 vectBg;
     // Measure text
-    vectBg = MeasureTextEx(guiSettings.defaultFont, guiMessageData.content.c_str(), (float)guiSettings.fontSize, (float)guiSettings.spacing);
+    vectBg = MeasureTextEx(guiSettings.defaultFont, guiMessageData.content.c_str(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
     vectBg.x += 2 * guiSettings.msgMargin.x;
     vectBg.y += 2 * guiSettings.msgMargin.y;
 
@@ -88,7 +109,7 @@ void updateGuiMessageDataPos(GuiMessageData& guiMessageData, Rectangle panel, fl
             data.rectBg = pos(panel, RAYLYT_BOTTOM | RAYLYT_LEFT, {5, 0, 5, offsetW}, vectBg);
             data.displayAuthor = true;
             data.rectAuthor = data.rectBg;
-            data.rectAuthor.y -= (guiSettings.fontSize + guiSettings.authorGap);
+            data.rectAuthor.y -= (GuiGetStyle(DEFAULT, TEXT_SIZE) + guiSettings.authorGap);
             break;
     }
     // Compute foreground rectangle
@@ -136,7 +157,7 @@ void GuiMessage(GuiMessageData guiMessageData, const GuiChatThemeData& theme, Ve
 /* Chat */
 void initGuiChatData(GuiChatData& guiChatData) {
     GuiChatData& data = guiChatData;
-    Rectangle& panel = guiSettings.chatRect;
+    Rectangle& panel = guiSettings.rectChat;
 
     // Empty the text input
     std::memset(data.chatMessage, '\0', MAX_SIZE_CHAT_MESSAGE);
@@ -230,10 +251,10 @@ void updateGuiChatDataMessages(GuiChatData& guiChatData, uint32_t chatId) {
         offsetMessageNotContained(guiChatData, guiMessageData);
 
     data.messages.push_back(guiMessageData);
-    data.panelScroll = {0, guiSettings.chatRect.height - data.panelContent.height - data.rectTextBox.height - 15};
+    data.panelScroll = {0, guiSettings.rectChat.height - data.panelContent.height - data.rectTextBox.height - 15};
 }
 void GuiChat(GuiChatData &data) {
-    GuiScrollPanel(guiSettings.chatRect, data.name.c_str(), data.panelContent, &data.panelScroll, &data.panelView);
+    GuiScrollPanel(guiSettings.rectChat, data.name.c_str(), data.panelContent, &data.panelScroll, &data.panelView);
     data.theme->update(GetFrameTime());
     data.theme->draw();
     if(data.chatMessageEdit && IsKeyPressed(KEY_ENTER)) {
@@ -270,11 +291,11 @@ void GuiChatList() {
     Rectangle panel;
     Vector2 mousePos;
 
-    panel = guiSettings.chatListRect;
+    panel = guiSettings.rectChatList;
     GuiPanel(panel, "Chat List");
     Rectangle rectNewChatBtn = pos(panel, RAYLYT_RIGHT, {0, 2, 2}, {80, 20});
     if(GuiButton(rectNewChatBtn, "New chat"))
-        clientCoreState = ClientCoreState::CHAT_CREATION;
+        clientCoreState = ClientCoreState::CHAT_CREATE;
     panel.y += PANEL_HEADER_HEIGHT;
     mousePos = GetMousePosition();
     for(auto& guiChat: data.chatList) {
@@ -283,7 +304,7 @@ void GuiChatList() {
         // Draw bg
         if(guiChat.id == data.currentChatId)
             DrawRectangleRec(rectBg, SKYBLUE);
-        else if(checkVec2IsInRect(mousePos, rectBg)) {
+        else if(GuiGetState() != STATE_DISABLED && CheckCollisionPointRec(mousePos, rectBg)) {
             DrawRectangleRec(rectBg, LIGHTGRAY);
             if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                 data.currentChatId = guiChat.id;
@@ -292,10 +313,23 @@ void GuiChatList() {
         DrawTextRect(rectChatName, guiChat.name.c_str(), BLACK);
         if(!guiChat.messages.empty()) {
             const GuiMessageData& lastMessage = guiChat.messages.back();
-            std::string preview = lastMessage.author + ": " + lastMessage.content;
-            Rectangle rectLastMessage = posText(rectBg, RAYLYT_LEFT | RAYLYT_BOTTOM, {10, 0, 0, 10}, preview.c_str());
-            DrawTextRect(rectLastMessage, preview.c_str(), GRAY);
+            const std::string& lastMessageContent = clientConfig.idToChat[guiChat.id]->messages.back().content;
+            std::string preview = lastMessage.author + ": " + lastMessageContent;
+            std::string previewCut = cutMessage(preview, guiSettings.maxWidthMessagePreview);
+            if(previewCut.size() != preview.size())
+                previewCut += "...";
+            Rectangle rectLastMessage = posText(rectBg, RAYLYT_LEFT | RAYLYT_BOTTOM, {10, 0, 0, 10}, previewCut.c_str());
+            DrawTextRect(rectLastMessage, previewCut.c_str(), GRAY);
         }
+        // Delete chat
+        int dfFontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
+        GuiSetStyle(DEFAULT, TEXT_SIZE, 2 * dfFontSize);
+        Rectangle rectOptionBtn = posText(rectBg, RAYLYT_RIGHT | RAYLYT_CENTER_Y, {0, 10, 10, 0}, "X");
+        if(GuiLink(rectOptionBtn, "X", GRAY, RED, ColorBrightness(RED, -0.5))) {
+            guiChatDeleteData.id = guiChat.id;
+            clientCoreState = ClientCoreState::CHAT_DELETE;
+        }
+        GuiSetStyle(DEFAULT, TEXT_SIZE, dfFontSize);
         // If it is the current selected chat, draw it
         if(data.currentChatId == guiChat.id)
             GuiChat(guiChat);
@@ -304,23 +338,24 @@ void GuiChatList() {
     }
 }
 
-GuiChatCreationData guiChatCreationData;
-void initGuiChatCreationData() {
-    GuiChatCreationData &data = guiChatCreationData;
+/* Chat create */
+GuiChatCreateData guiChatCreateData;
+void initGuiChatCreateData() {
+    GuiChatCreateData &data = guiChatCreateData;
 
     std::memset(data.name, '\0', MAX_SIZE_CHAT_NAME);
     data.nameEdit = false;
     data.msgBgColor = BLUE;
     data.msgFgColor = RAYWHITE;
 }
-void GuiChatCreationPanel() {
-    GuiChatCreationData &data = guiChatCreationData;
+void GuiChatCreatePanel() {
+    GuiChatCreateData &data = guiChatCreateData;
     Rectangle panel;
 
-    panel = guiSettings.chatCreationRect;;
+    panel = guiSettings.rectChatCreate;;
     Rectangle rectPanel = panel;
     panel.y += 20;
-    Rectangle rectChatName = pos(panel, RAYLYT_CENTER_X, {0, 0}, {0.8f * panel.width, guiSettings.fontSize + 20.0f});
+    Rectangle rectChatName = pos(panel, RAYLYT_CENTER_X, {0, 0}, {0.8f * panel.width, GuiGetStyle(DEFAULT, TEXT_SIZE) + 20.0f});
     Rectangle rectChatNameLabel = posText(rectChatName, RAYLYT_TOP | RAYLYT_LEFT, {0}, "Chat name");
     Rectangle rectChatNameInput = pos(rectChatName, RAYLYT_BOTTOM | RAYLYT_CENTER_X, {0}, {rectChatName.width, 20});
     panel.y += 45;
@@ -328,7 +363,7 @@ void GuiChatCreationPanel() {
     panel.y += 50;
     Rectangle rectErrorMsg = posText(panel, RAYLYT_CENTER_X, {0}, data.errorMsg.c_str());
 
-    GuiPanel(rectPanel, "Chat creation");
+    GuiPanel(rectPanel, "Chat create");
     // Chat name input
     DrawTextRect(rectChatNameLabel, "Chat name", GRAY);
     if(GuiTextBox(rectChatNameInput, data.name, MAX_SIZE_CHAT_NAME, data.nameEdit))
@@ -344,7 +379,7 @@ void GuiChatCreationPanel() {
         tempChat.messages.clear();
         tempChat.theme = ChatTheme::DEFAULT;
         sendNetMsg(clientConfig.connection, [userId=localUser.id, tempChat]{ return buildNetMsgRequestChatAdd(tempChat); });
-        clientCoreState = ClientCoreState::WAIT_CHAT_CREATION;
+        clientCoreState = ClientCoreState::WAIT_CHAT_CREATE;
     }
     // Back button
     if(GuiButton(pos(rectPanel, RAYLYT_TOP | RAYLYT_RIGHT, {0, 2, 2, 0}, {20, 20}), "#113#"))
@@ -353,16 +388,72 @@ void GuiChatCreationPanel() {
     if(data.error)
         DrawTextRect(rectErrorMsg, data.errorMsg.c_str(), RED);
 }
-void GuiChatCreation() {
+void GuiChatCreate() {
     GuiDisable();
     GuiChatList();
     GuiEnable();
-    GuiChatCreationPanel();
+    GuiChatCreatePanel();
 }
-void GuiWaitChatCreation() {
+void GuiWaitChatCreate() {
     GuiDisable();
     GuiChatList();
-    GuiChatCreationPanel();
+    GuiChatCreatePanel();
     GuiEnable();
-    DrawTextRect(posText(guiSettings.chatCreationRect, RAYLYT_CENTER_X | RAYLYT_BOTTOM, {0}, "Creating chat..."), "Creating chat..", BLACK);
+    DrawTextRect(posText(guiSettings.rectChatCreate, RAYLYT_CENTER_X | RAYLYT_BOTTOM, {0}, "Creating chat..."), "Creating chat..", BLACK);
+}
+
+/* Chat deletion */
+GuiChatDeleteData guiChatDeleteData;
+void initGuiChatDeleteData() {
+    Chat& chat = *clientConfig.idToChat[guiChatDeleteData.id];
+
+    guiChatDeleteData.isLocalUserOwner = chat.roles[localUser.id] == ChatRole::OWNER;
+}
+void GuiChatDeleteOwner() {
+    Rectangle panel = guiSettings.rectChatDelete;
+
+    GuiPanel(panel, "Delete chat");
+    if(GuiButton(pos(panel, RAYLYT_TOP | RAYLYT_RIGHT, {0, 2, 2, 0}, {20, 20}), "X")) {
+        clientCoreState = ClientCoreState::CHAT;
+        return;
+    }
+    panel.y += 30;
+    // TODO: Bug:`posText` didn't give the right width here
+    if(GuiButton(pos(panel, RAYLYT_LEFT, {50, 0, 0, 0}, {150, 30}), "Leave chat")) {
+        sendNetMsg(clientConfig.connection, [chatId=guiChatDeleteData.id, userName=localUser.name]{ return buildNetMsgRequestChatMemberDel(chatId, userName); });
+        clientCoreState = ClientCoreState::CHAT;
+    }
+    if(GuiButton(pos(panel, RAYLYT_RIGHT, {0, 0, 50, 0}, {150, 30}), "Delete chat")) {
+        sendNetMsg(clientConfig.connection, [chatId=guiChatDeleteData.id]{ return buildNetMsgRequestChatDel(chatId); });
+        clientCoreState = ClientCoreState::CHAT;
+    }
+}
+void GuiChatDeleteMember() {
+    Rectangle panel = guiSettings.rectChatDelete;
+
+    GuiPanel(panel, "Delete chat");
+    if(GuiButton(pos(panel, RAYLYT_TOP | RAYLYT_RIGHT, {0, 2, 2, 0}, {20, 20}), "X")) {
+        clientCoreState = ClientCoreState::CHAT;
+        return;
+    }
+    panel.y += 25;
+    std::string text =  "Are you sure you want to leave this chat ?";
+    DrawTextRect(posText(panel, RAYLYT_CENTER_X, {0}, text.c_str()), text.c_str(), GRAY);
+    panel.y += GuiGetStyle(DEFAULT, TEXT_SIZE) + 5;
+    Rectangle rectBtns = pos(panel, RAYLYT_CENTER_X, {0}, {150, 30});
+    if(GuiButton(pos(rectBtns, RAYLYT_LEFT, {0}, {60, 30}), "No"))
+        clientCoreState = ClientCoreState::CHAT;
+    if(GuiButton(pos(rectBtns, RAYLYT_RIGHT, {0}, {60, 30}), "Yes")) {
+        sendNetMsg(clientConfig.connection, [chatId=guiChatDeleteData.id, userName=localUser.name]{ return buildNetMsgRequestChatMemberDel(chatId, userName); });
+        clientCoreState = ClientCoreState::CHAT;
+    }
+}
+void GuiChatDelete() {
+    GuiDisable();
+    GuiChatList();
+    GuiEnable();
+    if(guiChatDeleteData.isLocalUserOwner)
+        GuiChatDeleteOwner();
+    else
+        GuiChatDeleteMember();
 }

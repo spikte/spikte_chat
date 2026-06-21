@@ -7,10 +7,7 @@ void initSettingsDefaults() {
     guiSettings.windowGap = 10;
     guiSettings.authorGap = 5;
     guiSettings.chatListItemHeight = -1;
-    guiSettings.fontSize = 20;
     guiSettings.msgGap = 8;
-    guiSettings.msgInterline = 4;
-    guiSettings.spacing = 0;
     guiSettings.msgMargin = {10, 5, 10, 5};
     guiSettings.msgMaxSize = {-1};
     guiSettings.msgMaxSizeServer = {-1};
@@ -19,7 +16,7 @@ void initSettingsDefaults() {
 }
 // Based on: https://www.raylib.com/examples/text/loader.html?name=text_font_sdf
 void initDefaultFont() {
-    guiSettings.defaultFont = LoadFontEx("static/Jersey10-Regular.ttf", guiSettings.fontSize, 0, 400);
+    guiSettings.defaultFont = LoadFontEx("static/Jersey10-Regular.ttf", 20, 0, 400);
 }
 void initRectCentered(Rectangle& rect, int screenWidth, int screenHeight, int width, int height) {
     rect.x = screenWidth < width ? 0 : screenWidth / 2 - width / 2;
@@ -34,37 +31,39 @@ void initSettingsAuth(int screenWidth, int screenHeight) {
     initRectCentered(guiSettings.rectAuth, screenWidth, screenHeight, 300, 300);
 }
 void initSettingsChatList(int screenWidth, int screenHeight) {
-    guiSettings.chatListRect.x = guiSettings.margin.x;
-    guiSettings.chatListRect.y = guiSettings.margin.y;
-    guiSettings.chatListRect.width = (screenWidth - 2 * guiSettings.margin.x) / 4.f - guiSettings.windowGap / 2.f;
-    guiSettings.chatListRect.height = screenHeight - 2 * guiSettings.margin.y;
-    guiSettings.chatListItemHeight = std::max(guiSettings.fontSize, 50);
+    guiSettings.rectChatList.x = guiSettings.margin.x;
+    guiSettings.rectChatList.y = guiSettings.margin.y;
+    guiSettings.rectChatList.width = (screenWidth - 2 * guiSettings.margin.x) / 4.f - guiSettings.windowGap / 2.f;
+    guiSettings.rectChatList.height = screenHeight - 2 * guiSettings.margin.y;
+    guiSettings.chatListItemHeight = std::max(GuiGetStyle(DEFAULT, TEXT_SIZE), 50);
+    guiSettings.maxWidthMessagePreview = guiSettings.rectChatList.width * 0.6f;
 }
 void initSettingsChat(int screenWidth, int screenHeight) {
-    guiSettings.chatRect.x = guiSettings.chatListRect.x + guiSettings.chatListRect.width + guiSettings.windowGap / 2.f;
-    guiSettings.chatRect.y = guiSettings.margin.y;
-    guiSettings.chatRect.width = 3 * (screenWidth - 2 * guiSettings.margin.x) / 4.f - guiSettings.windowGap;
-    guiSettings.chatRect.height = screenHeight - 2 * guiSettings.margin.y;
+    guiSettings.rectChat.x = guiSettings.rectChatList.x + guiSettings.rectChatList.width + guiSettings.windowGap / 2.f;
+    guiSettings.rectChat.y = guiSettings.margin.y;
+    guiSettings.rectChat.width = 3 * (screenWidth - 2 * guiSettings.margin.x) / 4.f - guiSettings.windowGap;
+    guiSettings.rectChat.height = screenHeight - 2 * guiSettings.margin.y;
     guiSettings.inputTextBoxDim = {0, 20};
     guiSettings.inputTextBoxMargin = {5, 0, 5, 10};
-    if(guiSettings.chatRect.width > 100) {
-        guiSettings.msgMaxSize = {guiSettings.chatRect.width * 0.1f, 0};
-        guiSettings.msgMaxSizeServer = {guiSettings.chatRect.width * 0.8f, 0};
+    if(guiSettings.rectChat.width > 100) {
+        guiSettings.msgMaxSize = {guiSettings.rectChat.width * 0.1f, 0};
+        guiSettings.msgMaxSizeServer = {guiSettings.rectChat.width * 0.8f, 0};
     }
     else {
-        guiSettings.msgMaxSize = {guiSettings.chatRect.width, 0};
-        guiSettings.msgMaxSizeServer = {guiSettings.chatRect.width, 0};
+        guiSettings.msgMaxSize = {guiSettings.rectChat.width, 0};
+        guiSettings.msgMaxSizeServer = {guiSettings.rectChat.width, 0};
     }
 }
-void initSettingsChatCreation(int screenWidth, int screenHeight) {
-    initRectCentered(guiSettings.chatCreationRect, screenWidth, screenHeight, 250, 100);
+void initSettingsChatCreate(int screenWidth, int screenHeight) {
+    initRectCentered(guiSettings.rectChatCreate, screenWidth, screenHeight, 250, 100);
+}
+void initSettingsChatDelete(int screenWidth, int screenHeight) {
+    initRectCentered(guiSettings.rectChatDelete, screenWidth, screenHeight, 400, 100);
 }
 void initSettingsChatMember(int screenWidth, int screenHeight) {
-    initRectCentered(guiSettings.chatMemberRect, screenWidth, screenHeight, 300, 400);
+    initRectCentered(guiSettings.rectChatMember, screenWidth, screenHeight, 300, 400);
 }
-void initSettingsMsg() {
-    guiSettings.spacing = guiSettings.fontSize / 30;
-}
+void initSettingsMsg() { }
 void initSettings(int screenWidth, int screenHeight) {
     GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);
     GuiSetStyle(LISTVIEW, SCROLLBAR_WIDTH, 5);
@@ -75,6 +74,7 @@ void initSettings(int screenWidth, int screenHeight) {
     initSettingsAuth(screenWidth, screenHeight);
     initSettingsChatList(screenWidth, screenHeight);
     initSettingsChat(screenWidth, screenHeight);
-    initSettingsChatCreation(screenWidth, screenHeight);
+    initSettingsChatCreate(screenWidth, screenHeight);
+    initSettingsChatDelete(screenWidth, screenHeight);
     initSettingsMsg();
 }

@@ -36,7 +36,6 @@ static void moveGuiChatDataToFront(uint32_t chatId) {
 
 /* STATE */
 void initState(ClientCoreState prevState) {
-    std::printf("%d -> %d\n", prevState, clientCoreState);
     bool setDefaultAddr = true;
     switch(clientCoreState) {
         case ClientCoreState::SERVER_CONNECTION:
@@ -63,8 +62,11 @@ void initState(ClientCoreState prevState) {
             else
                 initGuiLoginData(false);
             break;
-        case ClientCoreState::CHAT_CREATION:
-            initGuiChatCreationData();
+        case ClientCoreState::CHAT_CREATE:
+            initGuiChatCreateData();
+            break;
+        case ClientCoreState::CHAT_DELETE:
+            initGuiChatDeleteData();
             break;
         default:
             break;
@@ -86,11 +88,14 @@ void drawState() {
         case ClientCoreState::WAIT_LOGIN:
             GuiWaitAuth();
             break;
-        case ClientCoreState::CHAT_CREATION:
-            GuiChatCreation();
+        case ClientCoreState::CHAT_CREATE:
+            GuiChatCreate();
             break;
-        case ClientCoreState::WAIT_CHAT_CREATION:
-            GuiWaitChatCreation();
+        case ClientCoreState::CHAT_DELETE:
+            GuiChatDelete();
+            break;
+        case ClientCoreState::WAIT_CHAT_CREATE:
+            GuiWaitChatCreate();
             break;
         case ClientCoreState::WAIT_COMMAND_PROCESS:
         case ClientCoreState::CHAT:
@@ -220,8 +225,8 @@ static bool canHandleMessage(NetworkMessageType messageType) {
                 return true;
             return false;
         case ClientCoreState::CHAT:
-        case ClientCoreState::CHAT_CREATION:
-        case ClientCoreState::WAIT_CHAT_CREATION:
+        case ClientCoreState::CHAT_CREATE:
+        case ClientCoreState::WAIT_CHAT_CREATE:
         case ClientCoreState::WAIT_CHAT_MESSAGE:
         case ClientCoreState::WAIT_COMMAND_PROCESS:
             if(messageType == NMType::CHAT ||
@@ -276,13 +281,13 @@ void handleServerMessageLogin(NetworkMessage& netMsg) {
     }
     clientCoreState = ClientCoreState::LOGIN;
 }
-// Chat creation response
+// Chat create response
 void handleServerMessageChatAdd(NetworkMessage& netMsg) {
     if(netMsg.status == NMStatus::SUCCESS) {
         clientCoreState = ClientCoreState::CHAT;
         return;
     }
-    clientCoreState = ClientCoreState::CHAT_CREATION;
+    clientCoreState = ClientCoreState::CHAT_CREATE;
 }
 // Chat sync
 // Chat metadta
@@ -552,8 +557,8 @@ void initClientGui(int screenWidth, int screenHeight) {
     InitWindow(screenWidth, screenHeight, "Beej's chat (client)");
     SetTargetFPS(60);
     initSettings(screenWidth, screenHeight);
-    GuiSetStyle(DEFAULT, TEXT_SIZE, guiSettings.fontSize);
-    GuiSetStyle(DEFAULT, TEXT_SPACING, guiSettings.spacing);
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
+    GuiSetStyle(DEFAULT, TEXT_SPACING, 0);
     GuiSetFont(guiSettings.defaultFont);
 }
 void runClient(int screenWidth, int screenHeight, char** argv) {

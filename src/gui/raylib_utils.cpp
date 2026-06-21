@@ -1,46 +1,49 @@
 #include "../../include/gui/raylib_utils.hpp"
 
-bool checkVec2IsInRect(const Vector2 &point, const Rectangle &rect) {
-    return point.x >= rect.x && point.x <= rect.x + rect.width &&
-           point.y >= rect.y && point.y <= rect.y + rect.height;
-}
-int GuiLabeledTextBox(const Rectangle &bounds, float margin, char *text, int textSize, bool editMode, const char *label, Color labelColor) {
-    int textWidth;
+// Copied from raygui button, just changed the display
+// However I removed the guiControlExclusiveMode check, not the best
+// but not the end of the world
+int GuiLink(const Rectangle& pos, const char* text, Color released, Color focused, Color pressed) {
+    int result = 0;
+    GuiState state = (GuiState)GuiGetState();
 
-    textWidth = MeasureText(label, guiSettings.fontSize);
-    int y = bounds.y + bounds.height / 2 - (float)guiSettings.fontSize / 2;
-    DrawText(label, bounds.x + margin, y, guiSettings.fontSize, labelColor);
-    Rectangle textRect = bounds;
-    textRect.x += margin + textWidth;
-    textRect.width -= 2 * margin + textWidth;
-    return GuiTextBox(textRect, text, textSize, editMode);
-}
-uint32_t colorToU32(Color color) {
-    return ((uint32_t)color.r << 24) |
-           ((uint32_t)color.g << 16) |
-           ((uint32_t)color.b << 8 ) |
-           ((uint32_t)color.a);
-}
-Color u32ToColor(uint32_t colorU32) {
-    Color color;
+    // Update control
+    //--------------------------------------------------------------------
+    if ((state != STATE_DISABLED) && !GuiIsLocked()) {
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
-    color.r = colorU32 >> 24 & 0xFF;
-    color.g = colorU32 >> 16 & 0xFF;
-    color.b = colorU32 >> 8 & 0xFF;
-    color.a = colorU32 & 0xFF;
+        // Check button state
+        if (CheckCollisionPointRec(mousePoint, pos)) {
+            if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
+            else state = STATE_FOCUSED;
 
-    return color;
+            if (GUI_BUTTON_RELEASED) result = 1;
+        }
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    Color linkColor = released;
+    if(state == STATE_PRESSED)
+        linkColor = pressed;
+    else if(state == STATE_FOCUSED)
+        linkColor = focused;
+    DrawTextRect(pos, text, linkColor);
+    //--------------------------------------------------------------------
+
+    return result;      // Button pressed: result = 1
 }
-void DrawRectangleRoundedRadius(Rectangle rec, float radius, int segments, Color color) {
+void DrawRectangleRoundedRadius(Rectangle bounds, float radius, int segments, Color color) {
     float minSide;
     float roundness;
 
-    minSide = rec.width < rec.height ? rec.width : rec.height;
+    minSide = bounds.width < bounds.height ? bounds.width : bounds.height;
     roundness = 2 * radius / minSide;
-    DrawRectangleRounded(rec, roundness, segments, color);
+    DrawRectangleRounded(bounds, roundness, segments, color);
 }
 void DrawTextRect(Rectangle bounds, const char* text, Color color) {
-    DrawTextEx(guiSettings.defaultFont, text, {bounds.x, bounds.y}, guiSettings.fontSize, guiSettings.spacing, color);
+    DrawTextEx(GuiGetFont(), text, {bounds.x, bounds.y}, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING), color);
 }
 void DrawTextRectEx(Rectangle bounds, Font font, const char* text, float fontSize, float spacing, Color color) {
     DrawTextEx(font, text, {bounds.x, bounds.y}, fontSize, spacing, color);

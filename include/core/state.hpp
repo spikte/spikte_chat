@@ -9,8 +9,9 @@ enum class ClientCoreState {
     LOGIN,
     WAIT_LOGIN,
     CHAT,
-    CHAT_CREATION,
-    WAIT_CHAT_CREATION,
+    CHAT_CREATE,
+    WAIT_CHAT_CREATE,
+    CHAT_DELETE,
     WAIT_CHAT_MESSAGE,
     WAIT_COMMAND_PROCESS
 };

@@ -36,8 +36,8 @@ void initGuiServerInputData(bool setDefaultAddr) {
 GuiServerInputLayout getGuiServerInputLayout(Rectangle panel) {
     GuiServerInputData& data = guiServerInputData;
     Font& dfFont = guiSettings.defaultFont;
-    int dfFontSize = guiSettings.fontSize;
-    int dfSpacing = guiSettings.spacing;
+    int dfFontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
+    int dfSpacing = GuiGetStyle(DEFAULT, TEXT_SPACING);
     GuiServerInputLayout layout;
 
     layout.rectPanel = panel;
@@ -67,8 +67,8 @@ void GuiServerInput() {
     DrawTextRectEx(layout.rectHeader,
                    guiSettings.defaultFont,
                    data.headerLabel.c_str(),
-                   guiSettings.fontSize * 2,
-                   guiSettings.spacing,
+                   GuiGetStyle(DEFAULT, TEXT_SIZE) * 2,
+                   GuiGetStyle(DEFAULT, TEXT_SPACING),
                    GRAY);
     DrawTextRect(layout.rectServerInputLabel, data.serverInputLabel.c_str(), GRAY);
     if(GuiTextBox(layout.rectServerInputAddr, data.addr, sizeof(data.addr), data.editAddr)) {
@@ -160,7 +160,7 @@ GuiAuthLayout getGuiAuthLayout() {
     panel.y += 20;
     layout.rectServerInfo = posText(panel, RAYLYT_CENTER_X, {0}, data.serverInfoLabel.c_str());
     panel.y += lastLayout.height;
-    layout.rectHeader = posTextEx(guiSettings.defaultFont, panel, RAYLYT_CENTER_X, {0}, data.headerLabel.c_str(), guiSettings.fontSize * 2, guiSettings.spacing);
+    layout.rectHeader = posTextEx(guiSettings.defaultFont, panel, RAYLYT_CENTER_X, {0}, data.headerLabel.c_str(), GuiGetStyle(DEFAULT, TEXT_SIZE) * 2, GuiGetStyle(DEFAULT, TEXT_SPACING));
     panel.y += lastLayout.height;
     layout.rectUsernameLabel = pos(panel, RAYLYT_CENTER_X, {30, 0}, {240, 20});
     panel.y += lastLayout.height;
@@ -182,8 +182,8 @@ GuiAuthLayout getGuiAuthLayout() {
 void GuiAuth() {
     GuiAuthData &data = guiAuthData;
     Font& dfFont = guiSettings.defaultFont;
-    int dfFontSize = guiSettings.fontSize;
-    int dfSpacing = guiSettings.spacing;
+    int dfFontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
+    int dfSpacing = GuiGetStyle(DEFAULT, TEXT_SPACING);
     GuiAuthLayout layout = getGuiAuthLayout();
 
     GuiPanel(layout.rectPanel, NULL);
@@ -224,12 +224,7 @@ void GuiAuth() {
     }
 
     DrawTextRect(layout.rectAlreadyAuthQuestion, data.alreadyAuthLabel.c_str(), GRAY);
-    bool hover = CheckCollisionPointRec(GetMousePosition(), layout.rectAlreadyAuthOther);
-    Color linkColor = SKYBLUE;
-    if(hover)
-        linkColor = BLUE;
-    DrawTextRect(layout.rectAlreadyAuthOther, data.alreadyAuthOtherLabel.c_str(), linkColor);
-    if(hover && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+    if(GuiLink(layout.rectAlreadyAuthOther, data.alreadyAuthOtherLabel.c_str())) {
         if(data.btnLabel == "Sign In")
             clientCoreState = ClientCoreState::LOGIN;
         else if(data.btnLabel == "Login")
@@ -237,7 +232,6 @@ void GuiAuth() {
         return;
     }
     if(data.error) {
-        std::printf("ERROR AUTH: %s\n", data.errorMsg.c_str());
         Rectangle temp = posText(layout.rectPanel, RAYLYT_BOTTOM | RAYLYT_CENTER_X, {0}, data.errorMsg.c_str());
         DrawTextRect(temp, data.errorMsg.c_str(), RED);
     }

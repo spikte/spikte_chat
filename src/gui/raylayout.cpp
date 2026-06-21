@@ -38,5 +38,5 @@ Rectangle posTextEx(Font font, Rectangle container, uint16_t flags, Vector4 marg
     return pos(container, flags, margin, textDimension);
 }
 Rectangle posText(Rectangle container, uint16_t flags, Vector4 margin, const char *text) {
-    return posTextEx(guiSettings.defaultFont, container, flags, margin, text, guiSettings.fontSize, guiSettings.spacing);
+    return posTextEx(guiSettings.defaultFont, container, flags, margin, text, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING));
 }

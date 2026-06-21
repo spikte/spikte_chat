@@ -5,8 +5,8 @@
 #define RAYGUI_IMPLEMENTATION
 #include "../lib/raygui.h"
 
-constexpr int screenWidth = 1920;
-constexpr int screenHeight = 1080;
+constexpr int screenWidth = 1920 * 0.4;
+constexpr int screenHeight = 1080 * 0.8;
 
 int main(int argc, char *argv[]) {
     if(argc < 2)

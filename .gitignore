@@ -1,0 +1,10 @@
+.vscode/*
+obj/*
+openssl_test/*
+scripts/*
+bin/*
+
+chain.pem
+chat.db
+pkey.pem
+.clang-format
