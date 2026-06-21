@@ -4,7 +4,7 @@ Educational chat project in C++ to learn about the Linux networking stack.
 
 ## Running
 
->This is a an exemple to run this project on localhost with self signed CA, so not an exemple of a real TLS app deployment
+>This is an exemple to run this project on localhost with self signed CA, not an exemple of a real TLS app deployment
 
 ```
 make chain.pem
@@ -30,7 +30,13 @@ Note that the `chain.pem` file generated must be accessible from the client and 
 
 **TODO**:
 
+General
+* [ ] Fix bad/not great design choices, there are some here and there, like the state management
 * [ ] Test a lot of edge cases
+* [ ] Better error management
+
+Specific:
+* [ ] The chat role system feels a bit weak on the edge cases
 * [ ] Add audio
 * [ ] Maybe the theme should be client sided only and not shared between user of a same chat, it would allow that the theme is per user and not per chat
 * [ ] Chat history when pressing up arrow
@@ -44,4 +50,4 @@ Note that the `chain.pem` file generated must be accessible from the client and 
 * [ ] Informs the user if he tries to use a raw TCP connection when the server uses TLS encryption
 * [ ] Support for image format (PNG, JPEG, GiF)
 * [ ] Support for video format (MP4)
-* [ ] Support for audio
+* [ ] Support for audio message (Does chats use MP3 ? I don't know)
