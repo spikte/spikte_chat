@@ -110,7 +110,7 @@ NetworkMessage buildNetMsgRequestLogin(std::string pseudo, std::string password)
 // Chat request
 // // Create/delete a chat
 NetworkMessage buildNetMsgRequestChatAdd(const Chat &chat);
-NetworkMessage buildNetMsgRequestChatDel(const Chat &chat);
+NetworkMessage buildNetMsgRequestChatDel(uint32_t chatId);
 // // Add/delete/modify a chat member
 NetworkMessage buildNetMsgRequestChatMemberAdd(uint32_t chatId, std::string name, const ChatRole &role);
 NetworkMessage buildNetMsgRequestChatMemberDel(uint32_t chatId, std::string name);
