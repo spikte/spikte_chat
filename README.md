@@ -2,7 +2,7 @@
 
 Educational chat project in C++ to learn about the Linux networking stack.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/raoOjjr7Mjs?si=fAWUrBv6__nCZZvq" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+![Demo](https://youtu.be/raoOjjr7Mjs)
 
 ## Running
 
