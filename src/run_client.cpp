@@ -559,7 +559,6 @@ void initClientGui(int screenWidth, int screenHeight) {
     initSettings(screenWidth, screenHeight);
     GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
     GuiSetStyle(DEFAULT, TEXT_SPACING, 0);
-    GuiSetFont(guiSettings.defaultFont);
 }
 void runClient(int screenWidth, int screenHeight, char** argv) {
     /* Variable */

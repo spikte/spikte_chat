@@ -7,13 +7,13 @@ static std::string splitMessage(std::string message, float maxSize) {
     Vector2 currentDims;
     std::vector<int> codepoints; // Maybe an array ? The max message size is set so
 
-    messageDims = MeasureTextEx(guiSettings.defaultFont, message.c_str(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+    messageDims = MeasureTextEx(GuiGetFont(), message.c_str(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
     if(messageDims.x < maxSize)
         return message;
     start = 0;
     for(size_t i = 0; i < message.size(); i++) {
         codepoints.push_back(message[i]);
-        currentDims = MeasureTextCodepoints(guiSettings.defaultFont, codepoints.data(), codepoints.size(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+        currentDims = MeasureTextCodepoints(GuiGetFont(), codepoints.data(), codepoints.size(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
         if(currentDims.x >= maxSize) {
             result += message.substr(start, i - start);
             result += '\n';
@@ -35,14 +35,14 @@ static std::string cutMessage(std::string message, float maxWidth) {
     Vector2 currentDims;
     std::vector<int> codepoints; // Maybe an array ? The max message size is set so
 
-    messageDims = MeasureTextEx(guiSettings.defaultFont, message.c_str(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+    messageDims = MeasureTextEx(GuiGetFont(), message.c_str(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
     if(messageDims.x < maxWidth)
         return message;
     size_t end = 0;
     currentDims = {0};
     while(currentDims.x < maxWidth) {
         codepoints.push_back(message[end]);
-        currentDims = MeasureTextCodepoints(guiSettings.defaultFont, codepoints.data(), codepoints.size(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+        currentDims = MeasureTextCodepoints(GuiGetFont(), codepoints.data(), codepoints.size(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
         end++;
     }
     result += message.substr(0, end);
@@ -80,7 +80,7 @@ void initGuiMessageData(GuiMessageData& guiMessageData, const Message& message) 
     else
         data.displayAuthor = false;
 
-    data.boundingBox = MeasureTextEx(guiSettings.defaultFont, guiMessageData.content.c_str(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+    data.boundingBox = MeasureTextEx(GuiGetFont(), guiMessageData.content.c_str(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
     // Increase the bounding box by text inside margin
     data.boundingBox.x += 2 * guiSettings.msgMargin.x;
     data.boundingBox.y += 2 * guiSettings.msgMargin.y;
@@ -94,7 +94,7 @@ void updateGuiMessageDataPos(GuiMessageData& guiMessageData, Rectangle panel, fl
     Vector4 rectChatMargin;
 
     // Measure text
-    vectBg = MeasureTextEx(guiSettings.defaultFont, guiMessageData.content.c_str(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+    vectBg = MeasureTextEx(GuiGetFont(), guiMessageData.content.c_str(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
     vectBg.x += 2 * guiSettings.msgMargin.x;
     vectBg.y += 2 * guiSettings.msgMargin.y;
     // Set offsetW to the margin

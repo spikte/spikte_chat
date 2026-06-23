@@ -35,7 +35,7 @@ void initGuiServerInputData(bool setDefaultAddr) {
 }
 GuiServerInputLayout getGuiServerInputLayout(Rectangle panel) {
     GuiServerInputData& data = guiServerInputData;
-    Font& dfFont = guiSettings.defaultFont;
+    Font dfFont = GuiGetFont();
     int dfFontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
     int dfSpacing = GuiGetStyle(DEFAULT, TEXT_SPACING);
     GuiServerInputLayout layout;
@@ -65,7 +65,7 @@ void GuiServerInput() {
     layout = getGuiServerInputLayout(guiSettings.rectServerConnection);
     GuiPanel(layout.rectPanel, NULL);
     DrawTextRectEx(layout.rectHeader,
-                   guiSettings.defaultFont,
+                   GuiGetFont(),
                    data.headerLabel.c_str(),
                    GuiGetStyle(DEFAULT, TEXT_SIZE) * 2,
                    GuiGetStyle(DEFAULT, TEXT_SPACING),
@@ -160,7 +160,7 @@ GuiAuthLayout getGuiAuthLayout() {
     panel.y += 20;
     layout.rectServerInfo = posText(panel, RAYLYT_CENTER_X, {0}, data.serverInfoLabel.c_str());
     panel.y += lastLayout.height;
-    layout.rectHeader = posTextEx(guiSettings.defaultFont, panel, RAYLYT_CENTER_X, {0}, data.headerLabel.c_str(), GuiGetStyle(DEFAULT, TEXT_SIZE) * 2, GuiGetStyle(DEFAULT, TEXT_SPACING));
+    layout.rectHeader = posTextEx(GuiGetFont(), panel, RAYLYT_CENTER_X, {0}, data.headerLabel.c_str(), GuiGetStyle(DEFAULT, TEXT_SIZE) * 2, GuiGetStyle(DEFAULT, TEXT_SPACING));
     panel.y += lastLayout.height;
     layout.rectUsernameLabel = pos(panel, RAYLYT_CENTER_X, {30, 0}, {240, 20});
     panel.y += lastLayout.height;
@@ -181,7 +181,7 @@ GuiAuthLayout getGuiAuthLayout() {
 }
 void GuiAuth() {
     GuiAuthData &data = guiAuthData;
-    Font& dfFont = guiSettings.defaultFont;
+    Font dfFont = GuiGetFont();
     int dfFontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
     int dfSpacing = GuiGetStyle(DEFAULT, TEXT_SPACING);
     GuiAuthLayout layout = getGuiAuthLayout();

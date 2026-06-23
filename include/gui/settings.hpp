@@ -6,6 +6,7 @@
 #include <raylib.h>
 #include <algorithm>
 #include "../../lib/raygui.h"
+#include "raylayout.hpp"
 
 #if defined(PLATFORM_DESKTOP)
     #define GLSL_VERSION            330
@@ -21,9 +22,6 @@ constexpr int PANEL_HEADER_HEIGHT = 24;
 // -1 values means it depends on some non initialized value
 // and will be initialized later (like the screen width and height)
 struct GuiSettings {
-    // Font
-    Font defaultFont;
-
     // Server connection
     Rectangle rectServerConnection;
 

@@ -16,7 +16,9 @@ void initSettingsDefaults() {
 }
 // Based on: https://www.raylib.com/examples/text/loader.html?name=text_font_sdf
 void initDefaultFont() {
-    guiSettings.defaultFont = LoadFontEx("static/Jersey10-Regular.ttf", 20, 0, 400);
+    Font font;
+    font = LoadFontEx("static/Jersey10-Regular.ttf", 20, 0, 400);
+    GuiSetFont(font);
 }
 void initRectCentered(Rectangle& rect, int screenWidth, int screenHeight, int width, int height) {
     rect.x = screenWidth < width ? 0 : screenWidth / 2 - width / 2;
