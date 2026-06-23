@@ -1,9 +1,9 @@
 #ifndef GUI_RAYLAYOUT_HPP
 #define GUI_RAYLAYOUT_HPP
 
-#include "settings.hpp"
 #include <raylib.h>
 #include <stdint.h>
+#include "../../lib/raygui.h"
 
 enum RayLayoutFlags {
     // ALIGN X
