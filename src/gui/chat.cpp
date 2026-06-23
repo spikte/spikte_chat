@@ -91,10 +91,16 @@ void initGuiMessageData(GuiMessageData& guiMessageData, const Message& message) 
 void updateGuiMessageDataPos(GuiMessageData& guiMessageData, Rectangle panel, float offsetW) {
     GuiMessageData& data = guiMessageData;
     Vector2 vectBg;
+    Vector4 rectChatMargin;
+
     // Measure text
     vectBg = MeasureTextEx(guiSettings.defaultFont, guiMessageData.content.c_str(), (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
     vectBg.x += 2 * guiSettings.msgMargin.x;
     vectBg.y += 2 * guiSettings.msgMargin.y;
+    // Set offsetW to the margin
+    rectChatMargin = guiSettings.rectChatMargin;
+    rectChatMargin.w = offsetW;
+
 
     // Position the rectangles
     switch(data.msgType) {
@@ -103,10 +109,10 @@ void updateGuiMessageDataPos(GuiMessageData& guiMessageData, Rectangle panel, fl
             data.rectBg = pos(panel, RAYLYT_BOTTOM | RAYLYT_FILL_X, {0, 0, 0, offsetW}, vectBg);
             break;
         case GuiMessageType::LOCAL_USER:
-            data.rectBg = pos(panel, RAYLYT_BOTTOM | RAYLYT_RIGHT, {5, 0, 5, offsetW}, vectBg);
+            data.rectBg = pos(panel, RAYLYT_BOTTOM | RAYLYT_RIGHT, rectChatMargin, vectBg);
             break;
         case GuiMessageType::OTHER_USER:
-            data.rectBg = pos(panel, RAYLYT_BOTTOM | RAYLYT_LEFT, {5, 0, 5, offsetW}, vectBg);
+            data.rectBg = pos(panel, RAYLYT_BOTTOM | RAYLYT_LEFT, rectChatMargin, vectBg);
             data.displayAuthor = true;
             data.rectAuthor = data.rectBg;
             data.rectAuthor.y -= (GuiGetStyle(DEFAULT, TEXT_SIZE) + guiSettings.authorGap);

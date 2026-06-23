@@ -54,6 +54,7 @@ struct GuiSettings {
     int msgSegments;
     Vector2 inputTextBoxDim;
     Vector4 inputTextBoxMargin;
+    Vector4 rectChatMargin;
 };
 extern GuiSettings guiSettings;
 

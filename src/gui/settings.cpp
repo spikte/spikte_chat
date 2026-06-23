@@ -45,8 +45,9 @@ void initSettingsChat(int screenWidth, int screenHeight) {
     guiSettings.rectChat.height = screenHeight - 2 * guiSettings.margin.y;
     guiSettings.inputTextBoxDim = {0, 20};
     guiSettings.inputTextBoxMargin = {5, 0, 5, 10};
+    guiSettings.rectChatMargin = guiSettings.inputTextBoxMargin;
     if(guiSettings.rectChat.width > 100) {
-        guiSettings.msgMaxSize = {guiSettings.rectChat.width * 0.1f, 0};
+        guiSettings.msgMaxSize = {guiSettings.rectChat.width * 0.5f, 0};
         guiSettings.msgMaxSizeServer = {guiSettings.rectChat.width * 0.8f, 0};
     }
     else {
